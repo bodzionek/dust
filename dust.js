@@ -195,7 +195,10 @@ class DustParticle {
     if (!this.isAlive) return;
     if (this.lifeSpan - this.cycle <= 120) {
       this.alpha = Math.max(this.alpha - this.initAlpha / 120, 0);
-      this.radius = Math.max(this.radius - this.initRadius / 240, 0);
+      this.radius = Math.max(
+        this.radius - this.initRadius / 120,
+        this.initRadius / 2
+      );
     } else {
       if (this.alpha < this.initAlpha) {
         this.alpha += this.initAlpha / 120;
