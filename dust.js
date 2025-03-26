@@ -10,34 +10,40 @@ if (document.readyState !== "loading") {
 
 const DEFAULT_CONFIG = [
   {
-    count: 190,
+    count: 80,
     radius: 5,
     speed: 8,
-    alpha: 0.1,
+    alpha: 0.07,
   },
   {
     count: 80,
+    radius: 5,
+    speed: 2,
+    alpha: 0.07,
+  },
+  {
+    count: 60,
     radius: 15,
     speed: 4,
-    alpha: 0.07,
-  },
-  {
-    count: 80,
-    radius: 25,
-    speed: 10,
-    alpha: 0.07,
+    alpha: 0.05,
   },
   {
     count: 40,
+    radius: 25,
+    speed: 5,
+    alpha: 0.04,
+  },
+  {
+    count: 20,
     radius: 40,
-    speed: 15,
-    alpha: 0.05,
+    speed: 12,
+    alpha: 0.03,
   },
   {
     count: 10,
     radius: 60,
-    speed: 25,
-    alpha: 0.04,
+    speed: 10,
+    alpha: 0.02,
   },
 ];
 
@@ -108,10 +114,23 @@ class DustParticle {
     this.initAlpha = particleProps?.alpha || 1;
     this.alpha = particleProps?.alpha || 1;
     this.speed = (particleProps?.speed || 5) / 1000;
+    this.initRadius = particleProps?.radius || 10;
     this.radius = particleProps?.radius || 10;
-    this.lifeSpan = getRandomInt(300, 2000);
+    this.lifeSpan = 0;
+    this.spawnDelay = 0;
     this.cycle = 0;
+    this.isAlive = false;
+    this.position = null;
+    this.vector = null;
+
+    this.initParticleValues();
+  }
+
+  initParticleValues() {
+    this.lifeSpan = getRandomInt(300, 2000);
+    this.spawnDelay = getRandomInt(100, 500);
     this.isAlive = true;
+    this.cycle = 0;
     this.position = {
       x: getRandomInt(0, this.canvas.width),
       y: getRandomInt(0, this.canvas.height),
@@ -133,10 +152,14 @@ class DustParticle {
         0,
         this.position.x,
         this.position.y,
-        this.radius
+        Math.max(this.radius - 1, 0)
       );
       radgrad.addColorStop(0, `rgba(255,255,255,${this.alpha})`);
-      radgrad.addColorStop(0.7, `rgba(255,255,255,${this.alpha - 0.01})`);
+      radgrad.addColorStop(
+        0.7,
+        `rgba(255,255,255,${Math.max(this.alpha - 0.01, 0.01)})`
+      );
+      radgrad.addColorStop(0.9, `rgba(255,255,255,${this.alpha})`);
       radgrad.addColorStop(1, `rgba(255,255,255,0.01)`);
       this.ctx.fillStyle = radgrad;
       this.ctx.arc(
@@ -155,23 +178,35 @@ class DustParticle {
   }
 
   update() {
-    if (this.lifeSpan - this.cycle <= 20) {
-      this.alpha -= this.initAlpha / 20;
-    } else if (this.isAlive && this.alpha < this.initAlpha) {
-      this.alpha += this.initAlpha / 20;
-    }
-    if (this.cycle === this.lifeSpan) {
+    if (this.isAlive && this.cycle === this.lifeSpan) {
       this.isAlive = false;
       this.cycle = 1;
     }
-    if (!this.isAlive && this.cycle > 60) {
-      this.cycle = 1;
-      this.isAlive = true;
-      this.position = {
-        x: getRandomInt(0, this.canvas.width),
-        y: getRandomInt(0, this.canvas.height),
-      };
+    if (!this.isAlive && this.cycle >= this.spawnDelay) {
+      this.initParticleValues();
     }
+    if (this.isAlive) {
+      this.updateColorAndSize();
+      this.updatePositionAndVector();
+    }
+  }
+
+  updateColorAndSize() {
+    if (!this.isAlive) return;
+    if (this.lifeSpan - this.cycle <= 120) {
+      this.alpha = Math.max(this.alpha - this.initAlpha / 120, 0);
+      this.radius = Math.max(this.radius - this.initRadius / 240, 0);
+    } else {
+      if (this.alpha < this.initAlpha) {
+        this.alpha += this.initAlpha / 120;
+      }
+      if (this.radius < this.initRadius) {
+        this.radius += this.initRadius / 120;
+      }
+    }
+  }
+
+  updatePositionAndVector() {
     this.position.x += this.vector.x + getRandomInt(-1, 1) / 10;
     this.position.y += this.vector.y + getRandomInt(-1, 1) / 10;
     if (this.position.x < -100 || this.position.x > this.canvas.width + 100) {
