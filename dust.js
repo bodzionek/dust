@@ -54,7 +54,7 @@ const DEFAULT_CONFIG = [
   {
     count: 3,
     radius: 90,
-    speed: 25,
+    speed: 10,
     alpha: 0.01,
   },
 ];
@@ -142,7 +142,7 @@ class DustParticle {
 
   initParticleValues() {
     this.lifeSpan = getRandomInt(300, 2000);
-    this.spawnDelay = getRandomInt(100, 500);
+    this.spawnDelay = getRandomInt(0, 200);
     this.isSpawning =
       this.radius < this.initRadius || this.alpha < this.initAlpha;
     this.isAlive = true;
@@ -171,12 +171,12 @@ class DustParticle {
         this.position.y,
         Math.max(this.radius - 1, 0)
       );
-      radgrad.addColorStop(0, `rgba(255,255,255,0.01)`);
-      radgrad.addColorStop(0.9, `rgba(255,255,255,${this.alpha})`);
       radgrad.addColorStop(
-        1,
+        0,
         `rgba(255,255,255,${Math.max(this.alpha - 0.02, 0.01)})`
       );
+      radgrad.addColorStop(0.8, `rgba(255,255,255,${this.alpha})`);
+      radgrad.addColorStop(1, `rgba(255,255,255,0)`);
       this.ctx.fillStyle = radgrad;
       this.ctx.arc(
         this.position.x,
