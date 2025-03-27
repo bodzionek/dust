@@ -10,43 +10,43 @@ if (document.readyState !== "loading") {
 
 const DEFAULT_CONFIG = [
   {
-    count: 80,
+    count: 200,
     radius: 5,
     speed: 8,
     alpha: 0.15,
   },
   {
-    count: 80,
+    count: 180,
     radius: 5,
     speed: 2,
     alpha: 0.08,
   },
   {
-    count: 80,
+    count: 180,
     radius: 5,
     speed: 6,
     alpha: 0.09,
   },
   {
-    count: 60,
+    count: 90,
     radius: 15,
     speed: 4,
     alpha: 0.05,
   },
   {
-    count: 40,
+    count: 25,
     radius: 25,
     speed: 5,
     alpha: 0.04,
   },
   {
-    count: 20,
+    count: 5,
     radius: 40,
     speed: 12,
     alpha: 0.03,
   },
   {
-    count: 10,
+    count: 5,
     radius: 60,
     speed: 10,
     alpha: 0.02,
@@ -123,11 +123,11 @@ class DustParticle {
   constructor(canvasId, particleProps) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
-    this.initAlpha = particleProps?.alpha || 1;
-    this.alpha = particleProps?.alpha || 1;
     this.speed = (particleProps?.speed || 5) / 1000;
     this.initRadius = particleProps?.radius || 10;
     this.radius = particleProps?.radius || 10;
+    this.initAlpha = 0.04;
+    this.alpha = 0.04;
     this.lifeSpan = 0;
     this.spawnDelay = 0;
     this.cycle = 0;
@@ -156,6 +156,9 @@ class DustParticle {
       x: getRandomInt(-100, 100) * this.speed,
       y: getRandomInt(-100, 100) * this.speed,
     };
+    if (!this.getIfHighlighted()) {
+      this.alpha = 0.01;
+    }
   }
 
   draw() {
@@ -206,6 +209,13 @@ class DustParticle {
     }
   }
 
+  getIfHighlighted() {
+    return (
+      this.position.y >= this.canvas.height * 0.4 &&
+      this.position.y <= this.canvas.height * 0.6
+    );
+  }
+
   updateColorAndSize() {
     if (!this.isAlive) return;
 
@@ -230,10 +240,16 @@ class DustParticle {
       return;
     }
 
+    if (!this.getIfHighlighted()) {
+      this.alpha = Math.max(this.alpha - this.initAlpha / 120, 0.01);
+      return;
+    }
+
     const randomizer = getRandomInt(0, 10);
     const modifier = randomizer === 10 ? -1 : randomizer === 9 ? 1 : 0;
     const newRadius = this.radius + (this.initRadius / 60) * modifier;
-    const newAlpha = this.alpha + (this.initAlpha / 120) * modifier;
+    const newAlpha = this.alpha + this.initAlpha / 120;
+
     if (modifier === -1) {
       this.radius = Math.max(newRadius, this.initRadius * 0.5);
       this.alpha = Math.max(newAlpha, this.initAlpha - 0.02);
